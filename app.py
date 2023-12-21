@@ -39,8 +39,8 @@ def create_tables():
         print("Tables created successfully.")
 
 @app.route('/')
-def index():
-    return render_template('index.html')
+def indexx():
+    return render_template('indexx.html')
 
 # User login page
 @app.route('/user/user_login_page')
@@ -62,7 +62,7 @@ def admin_login_page():
 @app.route('/user/templates/home_page')
 @login_required  # This ensures that only logged-in users can access this page
 def home_page():
-    return render_template('user/templates/home.html')
+    return render_template('user/templates/index.html')
 
 # Admin home page
 @app.route('/admin/templates/admin_page')
