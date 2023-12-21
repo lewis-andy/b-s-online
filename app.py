@@ -20,14 +20,23 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
 
+class Subscription(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+
+
 # Set up the user loader function for Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# Create the tables within the application context
-with app.app_context():
-    db.create_all()
+# Create the tables within the application context for subscription message
+# CLI command to create the database tables
+@app.cli.command("create_tables")
+def create_tables():
+    with app.app_context():
+        db.create_all()
+        print("Tables created successfully.")
 
 @app.route('/')
 def index():
@@ -37,6 +46,12 @@ def index():
 @app.route('/user/user_login_page')
 def user_login_page():
     return render_template('user/login.html')
+
+# Add a route for serving other static files (images, etc.)
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    root_dir = os.path.dirname(os.getcwd())
+    return send_from_directory(os.path.join(root_dir, 'static'), filename)
 
 # Admin login page
 @app.route('/admin/admin_login_page')
@@ -53,6 +68,44 @@ def home_page():
 @app.route('/admin/templates/admin_page')
 def admin_page():
     return render_template('admin/templates/admin.html')
+
+
+# about
+@app.route('/about')
+def about_page():
+    return render_template('about.html')
+
+# home page/index page
+@app.route('/index_home')
+def index_home ():
+    return render_template('index.html')
+
+
+# products
+@app.route('/product')
+def product():
+    return render_template('product.html')
+
+# contact
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
+
+# blog
+@app.route('/blog')
+def blog():
+    return render_template('blog.html')
+
+# feature
+@app.route('/feature')
+def feature():
+    return render_template('feature.html')
+
+# testimonial
+@app.route('/testimonial')
+def testimonial():
+    return render_template('testimonial.html')
+
 
 # Login route and validation
 @app.route('/login', methods=['POST'])
@@ -90,6 +143,18 @@ def add_user():
     except:
         db.session.rollback()
         return jsonify({"status": "error", "message": f'Username {new_username} already exists. Please choose a different username.'})
+
+
+# subscriptional message
+@app.route('/subscribe', methods=['POST'])
+def subscribe():
+    email = request.form.get('email')
+
+    if not email or email in subscriptions:
+        return jsonify({'status': 'error', 'message': 'Invalid or duplicate email'})
+
+    subscriptions.add(email)
+    return jsonify({'status': 'success', 'message': 'Subscription successful'})
 
 if __name__ == '__main__':
     app.run(debug=True)

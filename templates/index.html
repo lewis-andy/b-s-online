@@ -64,9 +64,9 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <div class="navbar-nav ms-auto p-4 p-lg-0">
-                    <a href="index.html" class="nav-item nav-link active">Home</a>
+                    <a href="{{ url_for('index_home') }}" class="nav-item nav-link active">Home</a>
                     <a href="{{ url_for('about_page') }}" class="nav-item nav-link">About Us</a>
-                    <a href="{{ url_for('products') }}" class="nav-item nav-link">Products</a>
+                    <a href="{{ url_for('product') }}" class="nav-item nav-link">Products</a>
                     <div class="nav-item dropdown">
                         <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
                         <div class="dropdown-menu m-0">
@@ -76,7 +76,7 @@
 
                         </div>
                     </div>
-                    <a href="{{ url_for('Contact') }}" class="nav-item nav-link">Contact Us</a>
+                    <a href="{{ url_for('contact') }}" class="nav-item nav-link">Contact Us</a>
                 </div>
                 <div class="d-none d-lg-flex ms-2">
                     <a class="btn-sm-square bg-white rounded-circle ms-3" href="">
