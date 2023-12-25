@@ -19,56 +19,28 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-
-class Subscription(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-
+    is_admin = db.Column(db.Boolean, default=False)
 
 # Set up the user loader function for Flask-Login
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# Create the tables within the application context for subscription message
-# CLI command to create the database tables
-@app.cli.command("create_tables")
-def create_tables():
-    with app.app_context():
-        db.create_all()
-        print("Tables created successfully.")
 
 @app.route('/')
-def indexx():
-    return render_template('indexx.html')
+def index():
+    return render_template('index.html')
 
 # User login page
 @app.route('/user/user_login_page')
 def user_login_page():
-    return render_template('user/login.html')
+    return render_template('index.html')
 
 # Add a route for serving other static files (images, etc.)
 @app.route('/static/<path:filename>')
 def serve_static(filename):
     root_dir = os.path.dirname(os.getcwd())
     return send_from_directory(os.path.join(root_dir, 'static'), filename)
-
-# Admin login page
-@app.route('/admin/admin_login_page')
-def admin_login_page():
-    return render_template('admin/login.html')
-
-# User home page
-@app.route('/user/templates/home_page')
-@login_required  # This ensures that only logged-in users can access this page
-def home_page():
-    return render_template('user/templates/index.html')
-
-# Admin home page
-@app.route('/admin/templates/admin_page')
-def admin_page():
-    return render_template('admin/templates/admin.html')
-
 
 # about
 @app.route('/about')
@@ -78,8 +50,17 @@ def about_page():
 # home page/index page
 @app.route('/index_home')
 def index_home ():
+    return render_template('templates/index.html')
+
+# Route for the login page
+@app.route('/login')
+def login():
     return render_template('index.html')
 
+# Route for the sign-up page
+@app.route('/signup')
+def signup():
+    return render_template('sign_up.html')
 
 # products
 @app.route('/product')
@@ -119,31 +100,30 @@ def login():
         # Login the user
         login_user(user)
         # Redirect to the main page after successful login
-        return redirect(url_for('home_page'))
+        return redirect(url_for('index_home'))
 
-    return render_template('user/templates/login_alert.html')
+    return render_template('templates/login_alert.html')
 
 # Add a new user in login
-@app.route('/add_user', methods=['POST'])
+@app.route('/add_user', methods=['GET', 'POST'])
 def add_user():
-    new_username = request.form['new_username']
-    new_password = request.form['new_password']
+    if request.method == 'POST':
+        new_username = request.form['new_username']
+        new_password = request.form['new_password']
+        is_admin = 'admin' in request.form
 
-    if not new_username or not new_password:
-        return 'Username and password are required.'
+        if not new_username or not new_password:
+            flash('Username and password are required.', 'danger')
+        else:
+            hashed_password = new_password  # You should hash the password in a real-world application
+            new_user = User(username=new_username, password=hashed_password, is_admin=is_admin)
 
-    hashed_password = generate_password_hash(new_password)
+            db.session.add(new_user)
+            db.session.commit()
+            flash(f'User {new_username} added successfully!', 'success')
+            return redirect(url_for('login'))
 
-    new_user = User(username=new_username, password=hashed_password)
-
-    try:
-        db.session.add(new_user)
-        db.session.commit()
-        return jsonify({"status": "success", "message": f'User {new_username} added successfully! \n you may now Login'})
-    except:
-        db.session.rollback()
-        return jsonify({"status": "error", "message": f'Username {new_username} already exists. Please choose a different username.'})
-
+    return render_template('sign_up.html')
 
 # subscriptional message
 @app.route('/subscribe', methods=['POST'])
